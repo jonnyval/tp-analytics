@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Матрица отказов</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Отказная статистика</div>
+      <h1>Матрица тегов качества и категорий обращений</h1>
+    </div>
+    <div class="header-actions">
+      <a class="nav-link" href="index.html">К сотрудникам</a>
+      <a class="nav-link" href="overview.html">Общий анализ</a>
+      <a class="nav-link" href="modules.html">Модули</a>
+      <a class="nav-link" href="pivots.html">Сводные</a>
+      <button class="print-button" id="printButton" type="button">Экспорт в PDF</button>
+      <div class="source" id="sourceInfo"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls overview-controls">
+      <label>
+        Период
+        <select id="periodModeSelect">
+          <option value="all">Все время</option>
+          <option value="year">Год</option>
+          <option value="quarter" selected>Квартал</option>
+          <option value="month">Месяц</option>
+          <option value="custom">Свой диапазон</option>
+        </select>
+      </label>
+      <label id="periodValueLabel">
+        Значение периода
+        <select id="periodValueSelect"></select>
+      </label>
+      <label id="dateFromLabel" class="custom-period">
+        Дата с
+        <input id="dateFromInput" type="date">
+      </label>
+      <label id="dateToLabel" class="custom-period">
+        Дата по
+        <input id="dateToInput" type="date">
+      </label>
+      <label>
+        Категория
+        <select id="appealCategorySelect"></select>
+      </label>
+      <label>
+        Статус
+        <select id="statusSelect">
+          <option value="__all__">Все статусы</option>
+        </select>
+      </label>
+      <label>
+        Поиск
+        <input id="searchInput" type="search" placeholder="код, тема, клиент, тег">
+      </label>
+      <label>
+        Сортировка матрицы
+        <select id="matrixSortSelect">
+          <option value="count-desc">По количеству убыв.</option>
+          <option value="name">По алфавиту</option>
+        </select>
+      </label>
+      <label>
+        Загрузить CSV
+        <input id="csvInput" type="file" accept=".csv,text/csv">
+      </label>
+      <span class="source" id="csvImportInfo"></span>
+    </section>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Матрица: тег качества x категория <button class="help" data-help="В строках теги качества, в столбцах категории обращений. Ячейка показывает количество обращений с таким сочетанием.">?</button></h2>
+          <span id="matrixMeta"></span>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead id="matrixHead"></thead>
+            <tbody id="matrixBody"></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Теги качества <button class="help" data-help="Частота тегов качества в выбранной категории и периоде.">?</button></h2>
+          <span>по выбранной категории</span>
+        </div>
+        <div id="qualityTagBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Категории обращений <button class="help" data-help="Распределение обращений по категориям из выгрузки.">?</button></h2>
+          <span>распределение</span>
+        </div>
+        <div id="appealCategoryBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Скорость закрытия <button class="help" data-help="Медиана, P75 и P90 возраста обращений в выбранной выборке. Возраст считается от создания до закрытия.">?</button></h2>
+          <span>по возрасту обращений</span>
+        </div>
+        <div id="speedPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Динамика отказов <button class="help" data-help="Количество обращений выбранной категории по периодам.">?</button></h2>
+          <span>по периодам</span>
+        </div>
+        <div class="chart small" id="periodChart"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Клиенты <button class="help" data-help="Клиенты с наибольшим числом обращений в выбранной выборке.">?</button></h2>
+          <span>топ</span>
+        </div>
+        <div id="clientBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Исполнители <button class="help" data-help="Исполнители с наибольшим числом закрытых обращений в выбранной выборке.">?</button></h2>
+          <span>топ</span>
+        </div>
+        <div id="executorBars" class="bars"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="analytics-data.js"></script>
+  <script src="tag-taxonomy.js"></script>
+  <script src="failure-tags.js"></script>
+</body>
+</html>

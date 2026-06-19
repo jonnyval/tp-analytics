@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Аналитика модулей</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    .metric-bar-row { display: grid; gap: 7px; }
+    .metric-bar-label { display: grid; grid-template-columns: minmax(0, 1fr) max-content; gap: 12px; align-items: baseline; font-size: 14px; }
+    .metric-bar-label span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .metric-bar-label b { font-weight: 800; font-variant-numeric: tabular-nums; }
+    .metric-bar-track { height: 10px; overflow: hidden; border-radius: 999px; background: #edf2f7; }
+    .metric-bar-fill { height: 100%; min-width: 2px; border-radius: inherit; background: linear-gradient(90deg, var(--accent), #16a394); }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Оборудование и модули</div>
+      <h1>Аналитика обращений по модулям</h1>
+    </div>
+    <div class="header-actions">
+      <a class="nav-link" href="index.html">К сотрудникам</a>
+      <a class="nav-link" href="overview.html">Общий анализ</a>
+      <a class="nav-link" href="failure-tags.html">Матрица отказов</a>
+      <a class="nav-link" href="pivots.html">Сводные</a>
+      <button class="print-button" id="printButton" type="button">Экспорт в PDF</button>
+      <div class="source" id="sourceInfo"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls module-controls">
+      <label>
+        Период
+        <select id="periodModeSelect">
+          <option value="all" selected>Все время</option>
+          <option value="year">Год</option>
+          <option value="quarter">Квартал</option>
+          <option value="month">Месяц</option>
+          <option value="custom">Свой диапазон</option>
+        </select>
+      </label>
+      <label id="periodValueLabel">
+        Значение периода
+        <select id="periodValueSelect"></select>
+      </label>
+      <label id="dateFromLabel" class="custom-period">
+        Дата с
+        <input id="dateFromInput" type="date">
+      </label>
+      <label id="dateToLabel" class="custom-period">
+        Дата по
+        <input id="dateToInput" type="date">
+      </label>
+      <label>
+        Модуль
+        <select id="moduleSelect">
+          <option value="__all__">Все модули</option>
+        </select>
+      </label>
+      <label>
+        Семейство
+        <select id="familySelect">
+          <option value="__all__">Все семейства</option>
+        </select>
+      </label>
+      <label>
+        Функция
+        <select id="functionSelect">
+          <option value="__all__">Все функции</option>
+        </select>
+      </label>
+      <label>
+        Статус
+        <select id="statusSelect">
+          <option value="__all__">Все статусы</option>
+        </select>
+      </label>
+      <label>
+        Категория
+        <select id="categorySelect">
+          <option value="__all__">Все категории</option>
+        </select>
+      </label>
+      <label>
+        Поиск
+        <input id="searchInput" type="search" placeholder="код, тема, клиент, исполнитель">
+      </label>
+    </section>
+
+    <section class="kpis" id="moduleKpis"></section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Модули по отказам</h2>
+          <span id="failureMeta"></span>
+        </div>
+        <div id="failureModuleBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Динамика обращений</h2>
+          <span id="trendMeta"></span>
+        </div>
+        <div class="chart" id="moduleTrendChart"></div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Семейства</h2>
+          <span>распределение</span>
+        </div>
+        <div id="familyBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Функции модулей</h2>
+          <span>распределение</span>
+        </div>
+        <div id="functionBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Категории</h2>
+          <span>для выбранных модулей</span>
+        </div>
+        <div id="categoryBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Модуль x категория</h2>
+          <span>топ пересечений</span>
+        </div>
+        <div class="table-wrap"><table id="moduleCategoryTable"></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Модуль x клиент</h2>
+          <span>где больше обращений</span>
+        </div>
+        <div class="table-wrap"><table id="moduleClientTable"></table></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Покрытие отказов</h2>
+          <span>контроль разметки</span>
+        </div>
+        <div id="coveragePanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Отказы без модуля</h2>
+          <span>последние примеры</span>
+        </div>
+        <div class="table-wrap compact"><table id="unmatchedFailureTable"></table></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Обращения по выбранным модулям</h2>
+        <span id="ticketTableMeta"></span>
+      </div>
+      <div class="table-wrap"><table id="ticketTable"></table></div>
+    </section>
+  </main>
+
+  <script src="module-analytics-data.js"></script>
+  <script src="modules.js"></script>
+</body>
+</html>

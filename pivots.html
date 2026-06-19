@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Сводный анализ обращений</title>
+  <link rel="stylesheet" href="styles.css?v=pivots-print-dialog-1">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Общая статистика</div>
+      <h1>Сводный анализ обращений</h1>
+    </div>
+    <div class="header-actions">
+      <a class="nav-link" href="index.html">К сотрудникам</a>
+      <a class="nav-link" href="overview.html">Общий анализ</a>
+      <a class="nav-link" href="failure-tags.html">Матрица отказов</a>
+      <a class="nav-link" href="modules.html">Модули</a>
+      <button class="print-button" id="printButton" type="button">Экспорт в PDF</button>
+      <div class="source" id="sourceInfo"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls overview-controls">
+      <label>
+        Период
+        <select id="periodModeSelect">
+          <option value="all" selected>Все время</option>
+          <option value="year">Год</option>
+          <option value="quarter">Квартал</option>
+          <option value="month">Месяц</option>
+          <option value="custom">Свой диапазон</option>
+        </select>
+      </label>
+      <label id="periodValueLabel">
+        Значение периода
+        <select id="periodValueSelect"></select>
+      </label>
+      <label id="dateFromLabel" class="custom-period">
+        Дата с
+        <input id="dateFromInput" type="date">
+      </label>
+      <label id="dateToLabel" class="custom-period">
+        Дата по
+        <input id="dateToInput" type="date">
+      </label>
+      <label>
+        Статус
+        <select id="statusSelect">
+          <option value="__all__">Все статусы</option>
+        </select>
+      </label>
+      <div class="control-field">
+        <span>Категория</span>
+        <div class="multi-select" id="categorySelect">
+          <button class="multi-select-trigger" id="categoryTrigger" type="button" aria-expanded="false">
+            <span id="categorySummary">Все категории</span>
+          </button>
+          <div class="multi-select-menu" id="categoryOptions" hidden></div>
+        </div>
+      </div>
+      <label>
+        Тип оборудования
+        <select id="equipmentSelect">
+          <option value="__all__">Все типы</option>
+        </select>
+      </label>
+      <label>
+        Поиск
+        <input id="searchInput" type="search" placeholder="код, тема, клиент, категория, оборудование">
+      </label>
+    </section>
+
+    <section class="kpis" id="pivotKpis"></section>
+
+    <section class="grid one">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Создано обращений <button class="help" data-help="Временной ряд по дате создания обращения. На каждый период показываются две колонки: выбранные категории и все обращения без фильтра категорий.">?</button></h2>
+          <label class="chart-control">
+            Дискретность
+            <select id="createdGranularitySelect">
+              <option value="day">День</option>
+              <option value="month" selected>Месяц</option>
+              <option value="year">Год</option>
+            </select>
+          </label>
+        </div>
+        <div class="chart" id="createdTrendChart"></div>
+        <div class="chart-legend" id="createdTrendLegend"></div>
+        <div class="line-chart-wrap">
+          <div class="panel-head compact">
+            <h2>Доля выбранных категорий <button class="help" data-help="Процент созданных обращений выбранных категорий от всех созданных обращений в каждом периоде.">?</button></h2>
+            <span id="createdShareMeta"></span>
+          </div>
+          <div class="line-chart" id="createdShareChart"></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Количество обращений - категория обращений <button class="help" data-help="Распределение обращений выбранного периода по категории обращения.">?</button></h2>
+          <span id="categoryMeta"></span>
+        </div>
+        <div id="categoryBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Количество обращений - тип оборудования <button class="help" data-help="Распределение обращений выбранного периода по типу оборудования из выгрузки.">?</button></h2>
+          <span id="equipmentMeta"></span>
+        </div>
+        <div id="equipmentBars" class="bars"></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal-backdrop" id="printDialog" hidden>
+    <section class="modal" role="dialog" aria-modal="true" aria-labelledby="printDialogTitle">
+      <div class="modal-head">
+        <h2 id="printDialogTitle">Экспорт в PDF</h2>
+        <button class="icon-button" id="printDialogClose" type="button" aria-label="Закрыть">×</button>
+      </div>
+      <div class="modal-body">
+        <button class="orientation-option" id="printPortraitButton" type="button">
+          <strong>Вертикальный</strong>
+          <span>Компактный отчет, лучше для коротких периодов.</span>
+        </button>
+        <button class="orientation-option" id="printLandscapeButton" type="button">
+          <strong>Горизонтальный</strong>
+          <span>Шире графики, лучше для длинных временных рядов.</span>
+        </button>
+      </div>
+    </section>
+  </div>
+
+  <script src="analytics-data.js"></script>
+  <script src="pivots.js?v=pivots-print-dialog-1"></script>
+</body>
+</html>

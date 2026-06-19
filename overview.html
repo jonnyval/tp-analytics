@@ -1,0 +1,211 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Общий анализ обращений</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Общая статистика</div>
+      <h1>Общий анализ обращений</h1>
+    </div>
+    <div class="header-actions">
+      <a class="nav-link" href="index.html">К сотрудникам</a>
+      <a class="nav-link" href="failure-tags.html">Матрица отказов</a>
+      <a class="nav-link" href="modules.html">Модули</a>
+      <a class="nav-link" href="pivots.html">Сводные</a>
+      <button class="print-button" id="printButton" type="button">Экспорт в PDF</button>
+      <div class="source" id="sourceInfo"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls overview-controls">
+      <label>
+        Период
+        <select id="periodModeSelect">
+          <option value="all" selected>Все время</option>
+          <option value="year">Год</option>
+          <option value="quarter">Квартал</option>
+          <option value="month">Месяц</option>
+          <option value="custom">Свой диапазон</option>
+        </select>
+      </label>
+      <label id="periodValueLabel">
+        Значение периода
+        <select id="periodValueSelect"></select>
+      </label>
+      <label id="dateFromLabel" class="custom-period">
+        Дата с
+        <input id="dateFromInput" type="date">
+      </label>
+      <label id="dateToLabel" class="custom-period">
+        Дата по
+        <input id="dateToInput" type="date">
+      </label>
+      <label>
+        Статус
+        <select id="statusSelect">
+          <option value="__all__">Все статусы</option>
+        </select>
+      </label>
+      <label>
+        Поиск
+        <input id="searchInput" type="search" placeholder="код, тема, клиент, категория">
+      </label>
+    </section>
+
+    <section class="kpis" id="overviewKpis"></section>
+
+    <section class="grid three">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Концентрация потока <button class="help" data-help="Доля обращений, приходящаяся на крупнейших клиентов и категории. Чем выше значение, тем сильнее поток зависит от нескольких источников.">?</button></h2>
+          <span>топ клиентов и категорий</span>
+        </div>
+        <div id="concentrationPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Скорость закрытия <button class="help" data-help="Возраст обращения считается как разница между датой создания и датой закрытия. P90 показывает длинный хвост: 90% обращений закрыты не дольше этого значения.">?</button></h2>
+          <span>создание -> закрытие</span>
+        </div>
+        <div id="speedPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Качество данных <button class="help" data-help="Покрытие ключевых полей в выгрузке: дата создания/закрытия, категория, клиент, оценка.">?</button></h2>
+          <span>покрытие ключевых полей</span>
+        </div>
+        <div id="dataQualityPanel" class="metric-list"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Динамика обращений <button class="help" data-help="Количество закрытых обращений по периодам. Для режима все время и год используется квартальная динамика, для квартала/месяца/своего диапазона - месячная.">?</button></h2>
+          <span id="trendMeta"></span>
+        </div>
+        <div class="chart" id="periodTrendChart"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Статусы <button class="help" data-help="Распределение по полю финального статуса из выгрузки.">?</button></h2>
+          <span>распределение</span>
+        </div>
+        <div id="statusBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Категории обращений <button class="help" data-help="Топ категорий обращений из поля категории РегЛаб.">?</button></h2>
+          <span>топ</span>
+        </div>
+        <div id="categoryBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Типы обращений <button class="help" data-help="Топ типов обращений из выгрузки.">?</button></h2>
+          <span>топ</span>
+        </div>
+        <div id="ticketTypeBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Клиенты <button class="help" data-help="Клиенты с наибольшим числом обращений в выбранном периоде.">?</button></h2>
+          <span>топ по обращениям</span>
+        </div>
+        <div id="clientBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid four">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Возраст обращений <button class="help" data-help="Группы по длительности от создания до закрытия.">?</button></h2>
+          <span>создание -> закрытие</span>
+        </div>
+        <div id="ageBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>SLA и оценки <button class="help" data-help="SLA считается по заполненному полю просрочки. Оценка считается по числовым значениям поля оценки.">?</button></h2>
+          <span>качество данных</span>
+        </div>
+        <div id="qualityPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Дни недели <button class="help" data-help="Распределение закрытий по дням недели.">?</button></h2>
+          <span>закрытия</span>
+        </div>
+        <div id="weekdayBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Часы закрытия <button class="help" data-help="Распределение закрытий по часовым интервалам.">?</button></h2>
+          <span>внутри дня</span>
+        </div>
+        <div id="hourBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Теги качества <button class="help" data-help="Теги качества определяются по продуктовому словарю и тексту обращения.">?</button></h2>
+          <span>по продуктовым словарям</span>
+        </div>
+        <div id="qualityTagBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Теги x категории <button class="help" data-help="Самые частые сочетания тега качества и категории обращения.">?</button></h2>
+          <span>топ сочетаний</span>
+        </div>
+        <div class="table-wrap compact">
+          <table>
+            <thead>
+              <tr>
+                <th>Тег</th>
+                <th>Категория</th>
+                <th>Обращений</th>
+              </tr>
+            </thead>
+            <tbody id="tagCategoryBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Матрица: тип x категория <button class="help" data-help="Самые частые пары типа обращения и категории обращения.">?</button></h2>
+        <span>топ сочетаний</span>
+      </div>
+      <div class="table-wrap compact">
+        <table>
+          <thead>
+            <tr>
+              <th>Тип обращения</th>
+              <th>Категория</th>
+              <th>Обращений</th>
+              <th>Медиана дней</th>
+            </tr>
+          </thead>
+          <tbody id="matrixBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script src="analytics-data.js"></script>
+  <script src="overview.js"></script>
+</body>
+</html>

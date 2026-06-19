@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Аналитика обращений</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div>
+      <div class="eyebrow">Закрытые обращения</div>
+      <h1>Аналитика по сотрудникам</h1>
+    </div>
+    <div class="header-actions">
+      <a class="nav-link" href="overview.html">Общий анализ</a>
+      <a class="nav-link" href="failure-tags.html">Матрица отказов</a>
+      <a class="nav-link" href="modules.html">Модули</a>
+      <a class="nav-link" href="pivots.html">Сводные</a>
+      <button class="print-button" id="printButton" type="button">Экспорт в PDF</button>
+      <div class="source" id="sourceInfo"></div>
+    </div>
+  </header>
+
+  <main>
+    <section class="controls public-controls">
+      <label>
+        Период
+        <select id="periodModeSelect">
+          <option value="all">Все время</option>
+          <option value="year">Год</option>
+          <option value="quarter" selected>Квартал</option>
+          <option value="month">Месяц</option>
+          <option value="custom">Свой диапазон</option>
+        </select>
+      </label>
+      <label id="periodValueLabel">
+        Значение периода
+        <select id="periodValueSelect"></select>
+      </label>
+      <label id="dateFromLabel" class="custom-period">
+        Дата с
+        <input id="dateFromInput" type="date">
+      </label>
+      <label id="dateToLabel" class="custom-period">
+        Дата по
+        <input id="dateToInput" type="date">
+      </label>
+      <label>
+        Статус
+        <select id="statusSelect">
+          <option value="__all__">Все статусы</option>
+        </select>
+      </label>
+      <label>
+        Сотрудник
+        <select id="subjectSelect"></select>
+      </label>
+    </section>
+
+    <section class="kpis" id="kpis"></section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Динамика обращений <button class="help" data-help="Количество закрытых обращений выбранного сотрудника по периодам. Нулевые периоды скрываются, чтобы график не раздувался пустыми значениями.">?</button></h2>
+          <span id="countMeta"></span>
+        </div>
+        <div class="chart" id="countChart"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Стабильность и темп <button class="help" data-help="Сравнение выбранного периода с предыдущим периодом того же типа, лучший активный период, худший активный период без учета первого активного периода сотрудника, среднее и медиана.">?</button></h2>
+          <span id="stabilityMeta"></span>
+        </div>
+        <div id="stabilityPanel" class="metric-list"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Скорость закрытия <button class="help" data-help="Время от создания обращения до закрытия. Медиана показывает типичное значение, среднее чувствительнее к долгим обращениям.">?</button></h2>
+          <span>создание -> закрытие</span>
+        </div>
+        <div id="speedPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Месяцы внутри периода <button class="help" data-help="Распределение закрытых обращений выбранного сотрудника по месяцам внутри выбранного периода. Для произвольного диапазона показываются все месяцы диапазона.">?</button></h2>
+          <span>закрытия сотрудника</span>
+        </div>
+        <div class="chart small" id="monthChart"></div>
+      </div>
+    </section>
+
+    <section class="grid three">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Типы обращений <button class="help" data-help="Распределение обращений выбранного сотрудника по типу обращения из выгрузки.">?</button></h2>
+          <span>сотрудник</span>
+        </div>
+        <div id="ticketTypeBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Категории обращений <button class="help" data-help="Распределение обращений выбранного сотрудника по категории обращения из выгрузки.">?</button></h2>
+          <span>сотрудник</span>
+        </div>
+        <div id="categoryBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Клиенты <button class="help" data-help="Клиенты, по которым выбранный сотрудник закрыл больше всего обращений в выбранном периоде.">?</button></h2>
+          <span>топ по закрытиям</span>
+        </div>
+        <div id="clientBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid four">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Возраст обращений <button class="help" data-help="Группы по длительности от создания до закрытия обращения.">?</button></h2>
+          <span>создание -> закрытие</span>
+        </div>
+        <div id="ageBucketBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>SLA и оценки <button class="help" data-help="SLA-признаки считаются по заполненному полю просрочки SLA. Оценка считается по числовым значениям из поля оценки.">?</button></h2>
+          <span>по сотруднику</span>
+        </div>
+        <div id="qualityPanel" class="metric-list"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Дни закрытия <button class="help" data-help="Распределение закрытых обращений выбранного сотрудника по дням недели.">?</button></h2>
+          <span>по дням недели</span>
+        </div>
+        <div id="weekdayBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Часы закрытия <button class="help" data-help="Распределение закрытых обращений выбранного сотрудника по часовым интервалам.">?</button></h2>
+          <span>внутри дня</span>
+        </div>
+        <div id="hourBars" class="bars"></div>
+      </div>
+    </section>
+
+    <section class="grid two">
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Статусы периода <button class="help" data-help="Сравнение общего распределения статусов в выбранном периоде и статусов выбранного сотрудника. Используется поле финального статуса.">?</button></h2>
+          <span>все / сотрудник</span>
+        </div>
+        <div id="statusBars" class="bars"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head">
+          <h2>Теги качества <button class="help" data-help="Теги качества определяются по продуктовому словарю и тексту обращения. Метрика показывает, какие теги чаще встречаются у выбранного сотрудника.">?</button></h2>
+          <span>по продуктовым словарям</span>
+        </div>
+        <div id="qualityTagBars" class="bars"></div>
+      </div>
+    </section>
+  </main>
+
+  <script src="analytics-data.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
